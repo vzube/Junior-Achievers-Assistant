@@ -1,0 +1,274 @@
+from tkinter import *
+import time
+import random  # for random responses and emoji selection
+
+from typing import NamedTuple
+
+
+from typing import NamedTuple
+
+ColorTheme = NamedTuple("ColorTheme", [
+    ("background_color", str),
+    ("text_color", str),
+    ("entry_background_color", str),
+    ("button_background_color", str),
+    ("chat_history_background_color", str),
+    ("typing_indicator_color", str),
+    ("ja_box_background_color", str),
+])
+
+
+light_theme: ColorTheme = (
+    "white",  # background_color
+    "black",  # text_color
+    "lightgray",  # entry_background_color
+    "#23A4FF",  # button_background_color
+    "white",  # chat_history_background_color
+    "gray",  # typing_indicator_color
+    "lightgreen"  # ja_box_background_color
+)
+
+
+dark_theme: ColorTheme = (
+    "black",
+    "white",
+    "#333333",
+    "#4285f4",
+    "#222222",
+    "lightgray",
+    "#90EE90"
+)
+
+# Default theme (adjust colors as needed)
+default_theme = ColorTheme(
+    "white",
+    "black",
+    "lightgray",
+    "#23A4FF",
+    "white",
+    "gray",
+    "lightgreen"
+)
+
+UserProfile = NamedTuple("UserProfile", [("name", str), ("theme", ColorTheme), ("avatar", str), ("personality", str)])
+
+# User profile with default theme
+user_profile = UserProfile("", default_theme, None, "informal")
+
+# Example theme
+theme = ColorTheme(
+    "white",  # background_color
+    "black",  # text_color
+    "lightgray",  # entry_background_color
+    "#23A4FF",  # button_background_color
+    "white",  # chat_history_background_color
+    "gray",  # typing_indicator_color
+    "lightgreen"  # ja_box_background_color
+)
+
+user_profile = UserProfile("", theme, None, "informal")
+
+def load_user_profile():
+    # Implement logic to load user data 
+    # ...
+    # Assuming theme data is loaded 
+    theme_data = {"background_color": "white",  # Example theme data
+                  "text_color": "black",
+                  "entry_background_color": "lightgray",
+                  "button_background_color": "#23A4FF",
+                  "chat_history_background_color": "white",
+                  "typing_indicator_color": "gray",
+                  "ja_box_background_color": "lightgreen"}
+    theme = ColorTheme(**theme_data)  # Unpack dictionary as arguments
+    return UserProfile("", theme, None, "informal")
+
+class UserProfile:
+    def __init__(self, name, theme, avatar, personality):
+        self._name = name
+        self._theme = theme  # Use private attribute for theme
+        self._avatar = avatar
+        self._personality = personality
+
+    @property
+    def theme(self):
+        return self._theme
+
+    def set_theme(self, new_theme):
+        self._theme = new_theme  # Update theme using a setter method
+
+# Example usage
+user_profile = UserProfile("", default_theme, None, "informal")
+user_profile.set_theme(light_theme)
+
+def select_theme(theme_name):
+    global user_profile
+    if theme_name == "light":
+        user_profile.theme = light_theme
+    elif theme_name == "dark":
+        user_profile.theme = dark_theme
+    # ... handle other themes
+
+# Example usage in a settings window button click handler
+select_theme("light")
+
+# Define emoji dictionaries for different emotions
+positive_emojis = ["\U0001F600", "\U0001F604", "\U0001F601"]  #   
+neutral_emojis = ["\U0001F630", "\U0001F610"]  #   
+negative_emojis = ["\U0001F61E", "\U0001F615"]  #   
+
+# Placeholder for loading/saving user profiles (replace with actual logic)
+def load_user_profile():
+    return UserProfile("", "light", None, "informal")  # Default profile
+
+def save_user_profile(profile):
+    pass  # Implement logic to save profile data
+
+# Function to simulate typing with a "..." indicator and emoji
+def show_typing(emoji=None):
+    chat_history.insert(END, f"... {emoji if emoji else ''}\n")
+    window.update()
+    time.sleep(1)
+    chat_history.delete(END, END)
+
+# Function to handle user input and trigger chatbot logic
+def send_message():
+    user_input = entry.get()
+    show_typing(random.choice(positive_emojis))  # Random positive emoji while typing
+
+    # Replace this with actual chatbot logic considering conversation history (context_history)
+    context_history.append(user_input)  # Placeholder for context tracking
+    response = f"JA: Hi {user_profile.name} {random.choice(positive_emojis)}! This is a placeholder response to your message. (Context: {context_history[-3:]})"  # Consider recent messages
+
+    # Clear user input for next message
+    entry.delete(0, END)
+
+    # Display conversation in the text area with styling
+    chat_history.insert(END, f"{user_input}\n", user_profile.theme.text_color)
+    chat_history.insert(END, f"{response}\n", user_profile.theme.ja_box_background_color, "green")
+
+# Function to toggle theme
+def toggle_theme():
+    global user_profile
+    if user_profile.theme == light_theme:
+        user_profile.theme = dark_theme
+    else:
+        user_profile.theme = light_theme
+    update_theme()
+    save_user_profile(user_profile)  # Save updated theme preference
+
+# Function to update UI elements with current theme
+def update_theme():
+    window.config(bg=user_profile.theme.background_color)
+    chat_history.config(bg=user_profile.theme.chat_history_background_color)
+    entry.config(bg=user_profile.theme.entry_background_color)
+    send_button.config(bg=user_profile.theme.button_background_color)
+
+# Function to animate the background color (using `after` for non-blocking animation)
+def animate_background():
+    colors = ["lightgreen", "red", "yellow"]
+    current_index = 0
+
+    def change_color():
+        nonlocal current_index
+        window.config(bg=colors[current_index])
+        current_index = (current_index + 1) % len(colors)
+        window.after(1000, change_color)  # Schedule next color change after 1 second
+
+    change_color()  # Call the inner function to start animation
+
+# Function to handle user profile settings
+def open_settings():
+    # Create a new window for profile settings (implementation omitted for brevity)
+    settings_window = Tk()
+    settings_window.title("JA Chatbot Settings")
+
+    # Add elements for name, theme selection, avatar selection (if implemented), and personality selection
+
+    settings_window.mainloop()
+
+# Initialize the Tkinter window
+window = Tk()
+window.title("Junior Achievement KE Chatbot")
+
+# Load user profile (replace with actual loading logic)
+user_profile = load_user_profile()
+
+# Placeholder logo (optional)
+logo_image = """
+# Replace this with the actual logo image data
+...
+"""
+
+# Context history
+# Context history for basic conversation tracking 
+context_history = []
+
+# Create a menu bar for settings and other options (optional)
+menu_bar = Menu(window)
+
+# Create a "Settings" menu with a command to open the settings window
+settings_menu = Menu(menu_bar, tearoff=0)
+settings_menu.add_command(label="Profile", command=open_settings)
+menu_bar.add_cascade(label="Settings", menu=settings_menu)
+
+window.config(menu=menu_bar)
+
+# Create a text area for chat history with left-aligned packing
+chat_history = Text(window, height=10, width=50, font=("Arial", 12), wrap=WORD)
+chat_history.pack(side=LEFT, fill=BOTH, expand=True)
+
+# Create a text area for user input at the bottom right using `padx`/`pady`
+entry = Entry(window, width=50)
+entry.pack(side=BOTTOM, fill=X, padx=10, pady=10,)
+
+# Create a send button with appropriate styling and command, positioned at bottom right
+send_button = Button(window,
+                     text="Send",
+                     command=send_message,
+                     bg=user_profile.theme.button_background_color if user_profile.theme else "lightgray",  # Default fallback color
+                     font=("Arial", 12, "bold"))
+send_button.pack(side=BOTTOM, padx=10, pady=10, sticky=SE)
+
+# Implement a basic animation for the avatar (optional)
+# Replace this with your preferred animation logic (e.g., using GIFs or custom graphics)
+def animate_avatar():
+    # Example animation logic (replace with actual implementation)
+    chat_history.tag_config("avatar", foreground="blue")  # Change avatar color
+    chat_history.after(500, animate_avatar_back)  # Schedule color change back
+
+def animate_avatar_back():
+    chat_history.tag_config("avatar", foreground=user_profile.theme.text_color)  # Reset avatar color
+    chat_history.after(500, animate_avatar)  # Schedule next animation
+
+# Add a styled avatar text to the chat history (replace with actual avatar image if desired)
+chat_history.insert(END, f"\nJA: {random.choice(positive_emojis)} ", "avatar")  # Use a tag for animation
+
+# Start the animation loop (if using the provided basic animation)
+animate_avatar()
+
+# Function to handle greetings and humor (change this)
+def handle_greetings(user_input):
+    greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"]
+    if user_input.lower() in greetings:
+        response = f"JA: Hi {user_profile.name} {random.choice(positive_emojis)}! How can I help you today?"
+        return response
+    humor_triggers = ["joke", "funny"]
+    if any(trigger in user_input.lower() for trigger in humor_triggers):
+        response = f"JA: {random.choice(positive_emojis)} I'm still under development for humor, but here's a fun fact: A group of owls is called a parliament! {random.choice(positive_emojis)}"
+        return response
+    return None  # No greeting or humor detected, continue normal processing
+
+# Enhance chatbot logic to consider greetings and humor (example)
+def send_message():
+    user_input = entry.get()
+    greeting_response = handle_greetings(user_input)
+    if greeting_response:
+        show_typing(random.choice(positive_emojis))
+        chat_history.insert(END, f"{greeting_response}\n", user_profile.theme.ja_box_background_color, "green")
+        return  # Exit function if greeting or humor is handled
+
+    # Rest of your chatbot logic here (considering context_history)
+
+# Initialize the main event loop
+animate_background()  # Start the background animation
+window.mainloop()
