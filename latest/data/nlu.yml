@@ -45,6 +45,13 @@ nlu:
     - no way
     - not really
 
+- intent: bot_challenge
+  examples: |
+    - Are you a bot
+    - Are you a robot
+    - Are you a chatbot
+    - Are you Ai
+
 - intent: about_jak
   examples: |
     - What is Junior Achievement Kenya (JAK)?
@@ -355,3 +362,7 @@ nlu:
     - ty
     - thank
     - accept my gratitude
+- intent: unable_to_understand
+  examples: |
+    -When user writes giberrish
+    -When user writes in a different language

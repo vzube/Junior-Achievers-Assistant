@@ -6,6 +6,7 @@ intents:
   - goodbye
   - affirm
   - deny
+  - bot_challenge
   - about_jak
   - jak_founding_date
   - jak_mission
@@ -174,10 +175,10 @@ responses:
   utter_information_access:
     - text: "Individuals can visit the official Junior Achievement Kenya website, follow our social media channels, or contact their offices directly for more information."
   utter_thank:
-  - text: "Anytime!"
+  - text: "Anytime! Feel free to ask me any questions you might have about JA"
 
   utter_ask_rephrase:
-  - text: "I'm sorry am still running in limited data, I didn't quite get that. Can you please rephrase the question?"
+  - text: "I'm sorry am still under development and might not be able to get you clearly, Can you please rephrase the question?"
 
 session_config:
   session_expiration_time: 60
