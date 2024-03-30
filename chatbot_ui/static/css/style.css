@@ -10,6 +10,7 @@ body {
   background: #e3f2fd;
 }
 
+
 .chatbot {
   position: fixed;
   right: 40px;
@@ -28,16 +29,19 @@ body {
 }
 
 .chatbot header {
-  background: rgb(0, 208, 130);
+  background: #03a9f4; /* Light theme header color */
   padding: 16px 0;
   text-align: center;
   position: relative;
+  
 }
 
 .chatbot header h2 {
   color: #fff;
   font-size: 1.4rem;
+ 
 }
+
 .chatbot header span {
   position: absolute;
   right: 20px;
@@ -230,6 +234,68 @@ body {
 .response-buttons button:active {
   outline: none;
   box-shadow: 0 0 0 2px rgba(0, 130, 82, 0.5); /* Shadow with color similar to theme */
+}
+
+.settings-bar {
+  position: absolute; /* Position at top right */
+  top: 10px; /* Adjust top position as needed */
+  right: 10px;  /* Adjust right position as needed */
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 15px; /* Match box style of other features */
+  background-color: #3f51b5; /* Blue color for settings bar */
+  color: #fff; /* White text color */
+  cursor: pointer;
+  transition: all 0.2s ease; /* Smooth transition on hover */
+}
+
+.settings-bar:hover {
+  background-color: #333; /* Darker blue on hover */
+}
+
+.settings-bar span {
+  color: inherit; /* Inherit text color from settings bar */
+  margin-right: 10px;
+}
+
+/* Adding the transition for sliding in the settings panel */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 300px;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: -7px 0px 20px 1px rgba(0, 0, 0, 0.1);
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+/* Sliding in the settings panel */
+.settings-panel.active {
+  transform: translateX(100%);
+}
+
+.dark.settings-panel { /* Styles for dark theme */
+  background-color: #333; /* Dark background */
+  color: #fff; /* White text color */
+}
+
+#theme-toggle { /* Theme toggle styling */
+  display: block;
+  width: 100%;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  background-color: transparent; /* Transparent background */
+  color: inherit; /* Inherit text color from settings bar */
+  cursor: pointer;
+}
+
+.dark #theme-toggle { /* Theme toggle style for dark theme */
+  color: #fff; /* White text color */
 }
 
 @media (max-width: 490px) {

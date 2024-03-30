@@ -1,80 +1,85 @@
-const chatInput = document.querySelector(".chat-input textarea");
-const sendChatBtn = document.querySelector(".chat-input span");
+const chatInput = document.getElementById("chat-input");
+const sendChatBtn = document.getElementById("send-btn");
 const chatbox = document.querySelector(".chatbox");
+const chatbot = document.querySelector(".chatbot");
+const closeBtn = document.querySelector(".close-btn");
+const settingsBar = document.querySelector(".settings-bar");
+const settingsPanel = document.querySelector(".settings-panel");
+const themeToggle = document.getElementById("theme-toggle");
 const chatbotToggler = document.querySelector(".chatbot-toggler");
-const chatbotCloseBtn = document.querySelector(".close-btn");
-
 
 let userMessage;
 let API_KEY = "";
 const inputInitHeight = chatInput.scrollHeight;
 
 const createChatLi = (message, className) => {
-  // Create a chat <> element with passed message and className
+  // Create a chat element with passed message and className
   const chatLi = document.createElement("li");
   chatLi.classList.add("chat", className);
   let chatContent =
     className === "outgoing"
       ? `<p></p>`
-      : `<span class="material-symbols-outlined">smart_toy</span><p></p>`;
+      : `<img src="https://www.jakenya.org/img/logo.png" alt="Chatbot Logo" class="chat-message-bot-img"> <p></p>`;
   chatLi.innerHTML = chatContent;
   chatLi.querySelector("p").textContent = message;
   return chatLi;
 };
 
-
-const createAudioElement = (message, className) => {
-  // Create a chat <> element  with passed audio and className
-  const chatLi = document.createElement("li");
-  chatLi.classList.add("chat", className);
-  let chatContent =
-    className === "outgoing"
-      ? '<div></div>'
-      : `<span class="material-symbols-outlined">smart_toy</span><div></div>`;
-  chatLi.innerHTML = chatContent;
-  chatLi.querySelector("div").innerHTML = message;
-  return chatLi;
-}
-
+const createTypingIndicator = () => {
+  // Create a chat element for typing indicator
+  const typingLi = document.createElement("li");
+  typingLi.classList.add("chat", "incoming", "typing");
+  typingLi.innerHTML = "...";
+  return typingLi;
+};
 
 const generateResponse = (incomingChatLi) => {
-  // Generate a random response from the bot
-  const API_URL = " http://127.0.0.1:8000/chatbot_response";
-  const messageElement = incomingChatLi.querySelector("p");
+  // Simulate typing indicator before displaying response
+  chatbox.appendChild(createTypingIndicator());
+  chatbox.scrollTo(0, chatbox.scrollHeight);
 
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      sender: "test_user",
-      message: userMessage,
-    }),
-  };
+  // Replace typing indicator with actual response after a delay
+  setTimeout(() => {
+    const API_URL = "http://127.0.0.1:8000/chatbot_response";
+    const messageElement = incomingChatLi.querySelector("p");
 
+    // Send Post request to API, get response
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: "test_user",
+        message: userMessage,
+      }),
+    };
 
-  // send Post request to API, get response
-  fetch(API_URL, requestOptions)
-    .then((res) => res.json())
-    .then((data) => {
-      // Concatenate all messages into one string
-      const concatenatedMessage = data
-        .map((item) => item.text || item.image)
-        .join('\n');
+    fetch(API_URL, requestOptions)
+      .then((res) => res.json())
+      .then((data) => {
+        // Concatenate all messages into one string
+        const concatenatedMessage = data
+          .map((item) => item.text || item.image)
+          .join('\n');
 
-      // Set the messageElement's text content to the concatenated message
-      messageElement.textContent = concatenatedMessage;
+        // Set the messageElement's text content to the concatenated message
+        messageElement.textContent = concatenatedMessage;
 
-      console.log(data);
-    })
-    .catch((err) => {
-      messageElement.classList.add("error");
-      console.log("err", err);
-      messageElement.textContent =
-        "Oops! Something went wrong. Please try again later.";
-    })
-    .finally(() => chatbox.scrollTo(0, chatbox.scrollHeight));
+        console.log(data);
+      })
+      .catch((err) => {
+        messageElement.classList.add("error");
+        console.log("err", err);
+        messageElement.textContent =
+          "Oops! Something went wrong. Please try again later.";
+      })
+      .finally(() => {
+        // Remove typing indicator after the response is displayed
+        chatbox.removeChild(document.querySelector(".typing"));
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+      });
+  }, 1000); // Set the delay to 1 second for a more realistic typing effect
 };
 
 const handleChat = () => {
@@ -84,148 +89,99 @@ const handleChat = () => {
   chatInput.style.height = inputInitHeight + "px";
 
   // Append the user's message to the chatbox
-  chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+  const outgoingChatLi = createChatLi(userMessage, "outgoing");
+  chatbox.appendChild(outgoingChatLi);
   chatbox.scrollTo(0, chatbox.scrollHeight);
 
-  setTimeout(() => {
-    // Display "Thinking..." message while waiting for the response
-    const incomingChatLi = createChatLi("Thinking...", "incoming");
-    chatbox.appendChild(incomingChatLi);
-    chatbox.scrollTo(0, chatbox.scrollHeight);
-    generateResponse(incomingChatLi);
-  }, 600);
+  // Display "..." message while waiting for the response
+  const incomingChatLi = createChatLi("Thinking...", "incoming");
+  chatbox.appendChild(incomingChatLi);
+  chatbox.scrollTo(0, chatbox.scrollHeight);
+
+  generateResponse(incomingChatLi);
 };
 
+// Auto-resize textarea on input
 chatInput.addEventListener("input", () => {
-  // Auto resize the textarea
   chatInput.style.height = inputInitHeight + "px";
   chatInput.style.height = chatInput.scrollHeight + "px";
 });
 
-// Fix for Shift+Enter key
-chatInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
+// Send message on button click or Enter key press
+sendChatBtn.addEventListener("click", handleChat);
+chatInput.addEventListener("keypress", (event) => {
+  if (event.key === "Enter") {
     handleChat();
   }
 });
 
+// Close chatbot on close button click
+closeBtn.addEventListener("click", () => chatbot.classList.remove("show-chatbot"));
 
-sendChatBtn.addEventListener("click", handleChat);
-chatbotCloseBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
-chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+// Theme Toggle functionality
+themeToggle.addEventListener("change", (e) => {
+  const selectedTheme = e.target.checked ? "dark" : "light";
+  document.body.classList.remove("light", "dark");
+  document.body.classList.add(selectedTheme);
 
+  // Update chat elements based on the theme
+  updateChatTheme(selectedTheme);
+});
 
-let mediaRecorder;
-let audioChunks = [];
+// Update chat elements based on theme  when page loads
+const updateChatTheme = (theme) => {
+  const chatMessages = document.querySelectorAll(".chat p");
+  const chatHeader = document.querySelector(".chatbot header");
+  const settingsBar = document.querySelector(".settings-bar");
 
-// function to start recording audio
-const startRecording = () => {
-  navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-    mediaRecorder = new MediaRecorder(stream);
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // send the audio URL to the fastAPI server
-      sendAudio(audioBlob);
-
-      // Display the audio message in the chatbox
-      displayAudioMessage(audioUrl, "outgoing");
-
-
-      //clear recorded audio chunks
-      audioChunks = [];
-
-
-    }
-    mediaRecorder.start();
-
-  }).catch
-    ((err) => {
-      console.log("err", err);
-    });
-};
-
-// function to stop recording audio
-const stopRecording = () => {
-  if (mediaRecorder && mediaRecorder.state === "recording") {
-    mediaRecorder.stop();
+  for (const message of chatMessages) {
+    message.style.backgroundColor =
+      theme === "light" ? "#e3f2fd" : "#f2f2f2";
+    message.style.color = theme === "light" ? "#03a9f4" : "#007bff";
   }
+
+  chatHeader.style.backgroundColor =
+    theme === "light" ? "#03a9f4" : "#333";
+  chatHeader.style.color = theme === "light" ? "#fff" : "#fff";
+  settingsBar.style.backgroundColor =
+    theme === "light" ? "#eee" : "#444";
 };
 
-// function to send audio data to the FastAPI server
-const sendAudio = (audioBlob) => {
-  const formData = new FormData();
-  const audioFile = new File([audioBlob], "userVoiceInput.wav", { type: "audio/wav" });
-  formData.append("audio_file", audioFile);
-
-  const requestOptions = {
-    method: "POST",
-    body: formData,
-  };
-
-  fetch("http://localhost:8000/audio_message", requestOptions)
-    .then((res) => res.blob())
-    .then((audioBlob) => {
-      // Display the response in the chatbox
-      const audioUrl = URL.createObjectURL(audioBlob);
-      displayAudioMessage(audioUrl, "incoming");
-      chatbox.scrollTo(0, chatbox.scrollHeight);
-    }
-    )
-    .catch((err) => {
-      console.log("err", err);
-      const messageElement = chatbox.querySelector("li.incoming p");
-      messageElement.classList.add("error");
-      messageElement.textContent =
-        "Oops! Something went wrong. Please try again later.";
-    });
-};
-
-// function to display audio message in the chatbox
-const displayAudioMessage = (audioUrl, messageType) => {
-  // create an HTML element (e.g audio player) to play the audio
-  const audioElement = document.createElement("audio");
-  audioElement.src = audioUrl;
-  audioElement.type = "audio/wav";
-  audioElement.controls = true;
-
-  // Append the audio element to the chatbox for playback
-  chatbox.appendChild(createAudioElement(audioElement.outerHTML, messageType));
-
-  // Scroll to the bottom of the chatbox
-  chatbox.scrollTo(0, chatbox.scrollHeight);
-};
-
-// Get reference to the icons
-const recordBtn = document.getElementById("record-btn");
-const stopBtn = document.getElementById("stop-btn");
-
-// Add click event listeners to the record button
-recordBtn.addEventListener("click", () => {
-  // Hide the record button
-  recordBtn.style.display = "none";
-  startRecording();
-
-  // Show the stop button
-  stopBtn.style.display = "inline-block";
-
+settingsBar.addEventListener("click", () => {
+  if (settingsPanel.classList.contains("active")) {
+    hideSettingsPanel();
+  } else {
+    showSettingsPanel();
+  }
 });
 
-// Add click event listener to the stop button
-stopBtn.addEventListener("click", () => {
-  // Hide the stop button
-  stopBtn.style.display = "none";
-  stopRecording();
+function showSettingsPanel() {
+  settingsPanel.classList.add("active");
+}
 
-  // Show the record button
-  recordBtn.style.display = "inline-block";
+function hideSettingsPanel() {
+  settingsPanel.classList.remove("active");
+}
+
+// Chatbot opening functionality
+chatbotToggler.addEventListener("click", () => {
+  chatbot.classList.toggle("show-chatbot");
 });
+
+// Accessibility: Keyboard navigation for opening/closing chatbot (add this functionality)
+document.addEventListener("keydown", (event) => {
+  if (event.key === "/" && !event.ctrlKey && !event.altKey && !event.shiftKey) {
+    event.preventDefault();
+    chatbot.classList.toggle("show-chatbot");
+  }
+});
+
+// Add a chatbot idle message after a delay
+setInterval(() => {
+  if (chatbot.classList.contains("show-chatbot") && chatbox.lastChild.classList.contains("outgoing")) {
+    const idleMessage = createChatLi("Just letting you know, I'm here to help! 😊", "incoming");
+    chatbox.appendChild(idleMessage);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+    setTimeout(() => chatbox.removeChild(idleMessage), 8000);
+  }
+}, 300000); // Display an idle message every 5 minutes
